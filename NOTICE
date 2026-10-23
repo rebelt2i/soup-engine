@@ -1,0 +1,61 @@
+Soup Engine - third-party notices
+================================
+
+This file accompanies binary distributions (GitHub Releases and card
+packages). Corresponding source for each release is the git tag that
+produced it: https://github.com/rebelt2i/soup-engine
+
+Licence
+-------
+
+Soup Engine is free software under the GNU General Public License,
+version 2. See LICENSE.
+
+NO WARRANTY. The Program is distributed without any warranty; see
+sections 11 and 12 of LICENSE. You install and use it at your own risk.
+
+Magic Lantern
+-------------
+
+Soup Engine runs inside Magic Lantern on supported Canon EOS bodies.
+Classic packages ship a patched Magic Lantern AUTOEXEC.BIN. Film-in-ML
+packages ship a Magic Lantern AUTOEXEC.BIN rebuilt with Soup Engine's
+Film page overlay.
+
+Magic Lantern is copyright its respective authors and is available under
+the GNU GPL (version 2 or later, as stated in their sources).
+
+  Project:     https://magiclantern.fm
+  Builds:      https://builds.magiclantern.fm
+  Source used: https://github.com/reticulatedpines/magiclantern_simplified
+  Pin commit:  ed3e7c0dfacfdeaf3349dee73edf9e3621217462
+               (2025_release_01; see integrations/magiclantern/*/SOUP-PIN.txt)
+
+Soup Engine is not a Magic Lantern project. Please do not report Soup
+Engine issues to Magic Lantern.
+
+Independent JPEG Group
+----------------------
+
+The JPEG encode and decode paths use algorithms derived from the
+Independent JPEG Group's "islow" DCT and related Annex K / libjpeg
+practices. This software is based in part on the work of the
+Independent JPEG Group.
+
+Colour matrices
+---------------
+
+Camera colour matrices in the CR2 reader match publicly documented
+Adobe / dcraw XYZ-to-camera values. No Adobe, dcraw, or Canon source
+code is included.
+
+Trademarks and affiliation
+--------------------------
+
+Film stock names (for example Velvia, Acros, Portra, Gold) are shorthand
+for looks inspired by those films. They are original parameter designs,
+not measured emulations or licensed copies.
+
+All trademarks belong to their owners. Soup Engine is not affiliated
+with, endorsed by, or sponsored by Canon, Fujifilm, Kodak, Adobe, or
+Magic Lantern.

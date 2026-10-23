@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  host-test:
+    name: Host tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc make python3 gcc-arm-none-eabi
+
+      - name: make test
+        run: make -C src test
+
+      - name: make arm
+        run: make -C src arm
+
+  classic-payload:
+    name: Classic SE.BIN (5DC.111)
+    needs: host-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make gcc-arm-none-eabi
+
+      - name: Build SE.BIN payload
+        run: make -C src/ml/payload PLATFORM=5DC.111
+
+      - name: Upload SE.BIN
+        uses: actions/upload-artifact@v4
+        with:
+          name: classic-se-bin
+          path: src/ml/payload/soupeng.bin
+
+  film-ml:
+    name: Film-in-ML ${{ matrix.platform }}
+    needs: host-test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [50D.109, 6D.116, 5D3.123]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make python3 git gcc-arm-none-eabi
+
+      - name: Build Magic Lantern with Film page
+        env:
+          ARM_BINPATH: /usr/bin
+        run: python3 src/tools/build-ml.py --platform ${{ matrix.platform }}
+
+      - name: Stage flat artifact
+        run: |
+          plat="${{ matrix.platform }}"
+          build="src/vendor/magiclantern/platform/${plat}/build"
+          mkdir -p out
+          cp "$build/autoexec.bin" out/AUTOEXEC.BIN
+          cp "$build/"*.sym out/
+
+      - name: Upload AUTOEXEC and sym
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-ml-${{ matrix.platform }}
+          path: out/
+
+  publish:
+    name: Publish GitHub Release
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    needs: [host-test, classic-payload, film-ml]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Install pack tools
+        run: sudo apt-get update && sudo apt-get install -y python3
+
+      - name: Stage and pack per-body zips
+        id: pack
+        run: |
+          set -euo pipefail
+          SHORT=$(git rev-parse --short HEAD)
+          TAG="master-${{ github.run_number }}-${SHORT}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "short=${SHORT}" >> "$GITHUB_OUTPUT"
+
+          mkdir -p dist/classic-stage
+          cp card/AUTOEXEC.BIN dist/classic-stage/AUTOEXEC.BIN
+          cp artifacts/classic-se-bin/soupeng.bin dist/classic-stage/SE.BIN
+
+          for plat in 50D.109 6D.116 5D3.123; do
+            dest="src/vendor/magiclantern/platform/${plat}/build"
+            mkdir -p "$dest"
+            cp "artifacts/film-ml-${plat}/AUTOEXEC.BIN" "${dest}/autoexec.bin"
+            cp "artifacts/film-ml-${plat}/"*.sym "$dest/"
+          done
+
+          python3 src/tools/pack-release.py \
+            --tag "$TAG" \
+            --classic-dir dist/classic-stage
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.pack.outputs.tag }}
+          SHORT: ${{ steps.pack.outputs.short }}
+        run: |
+          set -euo pipefail
+          NOTES=$(mktemp)
+          cat > "$NOTES" << EOF
+          ## Soup Engine ${TAG}
+
+          Automatic build from \`${{ github.sha }}\` on \`${{ github.ref_name }}\` (CI run #${{ github.run_number }}).
+
+          Pick the zip for your camera (name ends with the platform id):
+
+          | Camera | Firmware | Asset suffix |
+          |--------|----------|--------------|
+          | EOS 5D Classic | 1.1.1 | \`-5DC.111.zip\` |
+          | EOS 50D | 1.0.9 | \`-50D.109.zip\` |
+          | EOS 6D Mark I | 1.1.6 | \`-6D.116.zip\` |
+          | EOS 5D Mark III | 1.2.3 | \`-5D3.123.zip\` |
+
+          Each zip includes \`LICENSE\`, \`NOTICE\`, and \`INSTALL.txt\`.
+
+          **Before installing:** install stock Magic Lantern for that firmware, back up \`AUTOEXEC.BIN\` (and the matching \`.sym\` on 50D / 6D / 5D3).
+
+          **Beta.** Unofficial. No warranty (GPL §§11–12). Not affiliated with Canon, Fujifilm, Kodak, Adobe, or Magic Lantern.
+
+          **Corresponding source:** commit \`${SHORT}\` / this release tag. Magic Lantern pin: \`ed3e7c0d\`. See \`NOTICE\`.
+          EOF
+
+          gh release create "$TAG" dist/soup-engine-${TAG}-*.zip \
+            --title "Soup Engine ${TAG}" \
+            --notes-file "$NOTES" \
+            --latest
