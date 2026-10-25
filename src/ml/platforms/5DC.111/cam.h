@@ -195,6 +195,13 @@ static inline int cam_ram_ptr_ok(uintptr_t p)
 /* Button codes as event->param reaches the GUI task (5D Classic gui.h). */
 #define SE_BTN_WHEEL_UP     0x00
 #define SE_BTN_WHEEL_DOWN   0x01
+/*
+ * No horizontal wheel events on this body. film.c still lists LEFT/RIGHT
+ * next to UP/DOWN; these sentinels never arrive from Canon, so the cases
+ * compile and never match. Do not reuse real BGMT codes (0x00..0x07, 0x0E..0x16).
+ */
+#define SE_BTN_WHEEL_LEFT   0x7E
+#define SE_BTN_WHEEL_RIGHT  0x7F
 #define SE_BTN_SET          0x02
 #define SE_BTN_MENU         0x03
 #define SE_BTN_INFO         0x04
@@ -402,6 +409,14 @@ static inline void cam_memcpy(volatile void *dst, const void *src, size_t n)
 /* ML's image: the overlay, the fonts and the Debug entry list. */
 #include "mlmap.h"
 
+/*
+ * On Digic 4 the raw VRAM word needs a crop adjustment; here Canon already
+ * publishes the panel buffer at CAM_bmp_vram_real_ptr.
+ */
+static inline uintptr_t cam_overlay_ptr(void)
+{
+    return (uintptr_t)MEM(CAM_bmp_vram_real_ptr);
+}
 
 /* ------------------------------------------------------------------ screen */
 /*

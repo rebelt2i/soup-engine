@@ -69,6 +69,9 @@ static inline int cam_ram_ptr_ok(uintptr_t p)
 /* Button codes from platform/unmaintained/40D.111/gui.h */
 #define SE_BTN_WHEEL_UP     0x00
 #define SE_BTN_WHEEL_DOWN   0x01
+/* No horizontal wheel on this body; sentinels for film.c switch cases. */
+#define SE_BTN_WHEEL_LEFT   0x7E
+#define SE_BTN_WHEEL_RIGHT  0x7F
 #define SE_BTN_SET          0x04
 #define SE_BTN_MENU         0x05
 #define SE_BTN_INFO         0x06
@@ -181,6 +184,11 @@ static inline void cam_memcpy(volatile void *dst, const void *src, size_t n)
 }
 
 #include "mlmap.h"
+
+static inline uintptr_t cam_overlay_ptr(void)
+{
+    return (uintptr_t)MEM(CAM_bmp_vram_real_ptr);
+}
 
 typedef void (*cam_printf_fn)(uint32_t fontspec, int x, int y, const char *fmt, ...);
 #define cam_printf (*(cam_printf_fn)ML_bmp_printf)
