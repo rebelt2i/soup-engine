@@ -290,7 +290,9 @@ to them. Open an issue here instead.
 All of it is in [`src/`](src). Day-to-day install is the release zips
 above — you do not need to build.
 
-Developers: see [`docs/BUILD.md`](docs/BUILD.md) and [`src/README.md`](src/README.md).
+Developers: see [`docs/guides/build-from-source.md`](docs/guides/build-from-source.md),
+[`docs/system/onboarding.md`](docs/system/onboarding.md), and [`src/README.md`](src/README.md).
+Agent / AI entry: [`AGENTS.md`](AGENTS.md).
 
 Notices for Magic Lantern, JPEG algorithms, and trademarks:
 [`NOTICE`](NOTICE).

@@ -6,7 +6,7 @@ simulator and the film stocks.
 **Photographers:** you do not need this folder. Download a per-body zip
 from [Releases](https://github.com/rebelt2i/soup-engine/releases/latest)
 and follow the root [README](../README.md). Build steps for developers are
-also summarised in [`docs/BUILD.md`](../docs/BUILD.md).
+also summarised in [`docs/guides/build-from-source.md`](../docs/guides/build-from-source.md).
 
 ## Layout
 
