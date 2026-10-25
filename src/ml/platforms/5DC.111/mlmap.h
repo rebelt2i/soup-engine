@@ -169,6 +169,12 @@
 #define SE_PALETTE_MARK         0x03EB0000   /* what ML writes there,     */
                                              /* = palette[15], 0x00981C68 */
 
+/* Digic II: palette via PB shadows only. film.c's Digic-4 EngDrvOut path
+ * is skipped when these resolve to 0. */
+#define CAM_LCD_PALETTE         0
+#define CAM_LCD_PAL_REG(k)      0
+#define CAM_LCD_PAL_REG2(k)     0
+
 /*
  * ML's sixteen palette words live in its image, so both the payload and the
  * simulator read them from the binary instead of carrying a copy. A copy is

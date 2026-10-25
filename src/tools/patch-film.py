@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Patch the soup engine into a Magic Lantern AUTOEXEC.BIN for the 5D Classic.
+Patch the soup engine into a Magic Lantern AUTOEXEC.BIN (Classic path).
 
 Platform constants (vendor path, hole addresses, payload base, checksum)
 live in ml/platforms/<name>/patch.json. The stub sources sit beside that
 file. Shared payload sources stay in ml/payload/.
 
   python3 tools/patch-film.py --platform 5DC.111
+  python3 tools/patch-film.py --platform 40D.111
 
-This is the Classic path only. The 50D does not survive the GUI hook;
-build that body with tools/build-50d.py instead.
+Classic only (VxWorks Digic 2/3). DryOS Film-in-ML bodies use
+tools/build-ml.py instead — do not run this on 50D / 6D / 5D3.
 """
 
 import argparse
@@ -311,6 +312,13 @@ def main():
                     help="platform directory under ml/platforms/ (default: 5DC.111)")
     args = ap.parse_args()
     cfg = load_platform(args.platform)
+
+    if cfg.get("holes_confirmed") is False:
+        die("%s patch holes are not confirmed yet.\n\n"
+            "  See ml/platforms/%s/README.md. Fill stub/gui/init addresses\n"
+            "  against a real AUTOEXEC, set holes_confirmed to true in\n"
+            "  patch.json, and verify FIO on that binary first."
+            % (cfg.get("name", args.platform), args.platform))
 
     stock = os.path.join(ROOT, "vendor", cfg["vendor"], "autoexec.bin")
     if not os.path.exists(stock):

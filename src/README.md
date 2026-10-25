@@ -8,29 +8,41 @@ simulator and the film stocks.
 | | |
 |:--|:--|
 | `engine/` | the look, the stock format, the CR2 reader, the JPEG codec. Freestanding C99, integer only on every per-pixel path, no libc. The same files build for the camera and for the desktop. |
-| `ml/payload/` | shared camera runtime. `film.c` is the engine's life on the body: the picker, the watcher, the develop queue. |
-| `ml/platforms/` | one directory per body (`5DC.111`, `50D.109`, …): `cam.h`, `mlmap.h`, `payload.ld`, `mlstub.S`, and `patch.json`. |
+| `ml/payload/` | Classic freestanding runtime (`film.c`): trash-button picker, watcher, develop queue. |
+| `ml/platforms/` | one directory per Classic body (`5DC.111`, `40D.111`, …): `cam.h`, `mlmap.h`, `payload.ld`, `mlstub.S`, `patch.json`. |
 | `host/` | `filmdev`, the desktop driver. Develops frames, builds contact sheets, writes cards. |
-| `tools/` | the simulator, the cross-checks, the release script. |
+| `tools/` | Film-in-ML builder, Classic patcher, simulator, cross-checks. |
 | `stocks/` | the thirteen films, as plain text. |
+| `vendor/` | Magic Lantern checkouts / vendor AUTOEXEC binaries (not shipped). |
+
+Film-in-ML overlays (shared Film page + per-camera Makefile) live outside
+`src/`, under [`../integrations/magiclantern/`](../integrations/magiclantern/).
 
 ## Platforms
 
-`PLATFORM` selects the body. The original shipping body is the EOS 5D
-Classic (`5DC.111`). This tree's Make default is still `50D.109` so local
-50D work stays convenient; pass `PLATFORM=` explicitly when you mean the
-other.
+Two install families share one look engine:
+
+| Family | Platforms | How to build |
+|:--|:--|:--|
+| **Classic** (VxWorks) | `5DC.111`, `40D.111` | `make payload` + `patch-film.py` |
+| **Film-in-ML** (DryOS) | `50D.109`, `6D.116`, `5D3.123` | `tools/build-ml.py --platform …` |
 
 ```sh
-make payload PLATFORM=5DC.111   # original 5D Classic path
-make payload PLATFORM=50D.109   # default in this tree
-make simtest PLATFORM=5DC.111
+# Classic
+make payload PLATFORM=5DC.111
+python3 tools/patch-film.py --platform 5DC.111
+
+make payload PLATFORM=40D.111   # needs vendor autoexec + confirmed holes
+python3 tools/patch-film.py --platform 40D.111
+
+# Film-in-ML
+python3 tools/build-ml.py --platform 50D.109
+python3 tools/build-ml.py --platform 6D.116 --card /path/to/card
+python3 tools/build-ml.py --platform 5D3.123 --card /path/to/card
 ```
 
-Each platform directory holds the absolute addresses and Magic Lantern
-patch holes for that body. Shared look code stays in `engine/`; shared
-payload logic stays in `ml/payload/`. That split is what makes small
-engine fixes upstreamable without dragging a whole second camera along.
+`PLATFORM` in the top-level Makefile still defaults to `50D.109` for local
+sim/host convenience; pass it explicitly for Classic work.
 
 Day-to-day install for each body is in the root [README](../README.md).
 
@@ -41,28 +53,15 @@ make all        # the desktop tools
 make test       # the host suite
 make simtest    # the real payload against a mock camera, byte for byte
 make arm        # check the engine still builds freestanding for ARM946E-S
-make payload    # AUTOEXEC.BIN and SE.BIN for the card (5D Classic path)
+make payload    # SE.BIN for Classic (needs PLATFORM=5DC.111 or 40D.111)
 ```
 
 You need `arm-none-eabi-gcc` for the camera build and nothing unusual
 for the rest.
 
-`make payload` is the 5D Classic path. It needs Magic Lantern's own
-`autoexec.bin` under `vendor/magiclantern-5Dc/`. That binary is theirs
-to distribute, so it is not included here, and `make payload` stops
-with a note rather than guessing.
-
-The 50D does not use `make payload`. Build it with `tools/build-50d.py`,
-described under 50D.109 below.
-
-`make simtest` is the one that matters. It runs the actual payload
-against a mock of Canon's API and compares what the simulated camera
-writes against a desktop reference, byte for byte. That equality is why
-the look lives in one shared file rather than being written twice.
-
 ## AUTOEXEC.BIN
 
-### 5DC.111
+### Classic — 5DC.111
 
 Magic Lantern's program for the 5D Classic, with the loader and the
 button hook written into padding gaps and the init-task pointer aimed at
@@ -76,39 +75,48 @@ python3 tools/patch-film.py --platform 5DC.111
 ```
 
 `make payload` needs Magic Lantern's `autoexec.bin` under
-`vendor/magiclantern-5Dc/`. The patch writes `card/AUTOEXEC.BIN` and
-`card/SE.BIN`; copy those with `ML/FILM/` to the CompactFlash card (or
-use the release zip). Stub over `dump_edmac` at `0x00980820`, payload at
-`0x009D0000` — see `ml/platforms/5DC.111/patch.json`.
+`vendor/magiclantern-5Dc/`. That binary is theirs to distribute, so it is
+not included here.
 
-`patch-film.py` is the Classic path only. Do not run it for the 50D.
+### Classic — 40D.111 (experimental)
 
-### 50D.109
+Same contract as the 5D Classic. Digic III / VxWorks. See
+[`ml/platforms/40D.111/README.md`](ml/platforms/40D.111/README.md):
 
-The body boots a Magic Lantern `autoexec.bin` rebuilt with the Film
-page. It does not boot `SE.BIN`, and it does not survive the GUI hook
-`patch-film.py` would plant at `0xB6964` / `0x60854`. Those addresses
-and the reasons are in `ml/platforms/50D.109/PITFALLS.md`.
+- No official builds.magiclantern.fm zip.
+- Prove FIO on your experimental AUTOEXEC first.
+- Vendor binary: `vendor/magiclantern-40D/autoexec.bin`.
+- `patch.json` ships with `holes_confirmed: false` until stub/gui/init
+  addresses are rediscovered for that binary.
+
+### Film-in-ML — 50D.109, 6D.116, 5D3.123
+
+These bodies boot a Magic Lantern `autoexec.bin` rebuilt with the Film
+page. They do not boot `SE.BIN`. Do not run `patch-film.py` on them.
 
 ```sh
-python3 tools/build-50d.py
-python3 tools/build-50d.py --card /path/to/card
+python3 tools/build-ml.py --platform 50D.109
+python3 tools/build-ml.py --platform 6D.116
+python3 tools/build-ml.py --platform 5D3.123
 ```
 
 The script checks out Magic Lantern `ed3e7c0d`
-(`magiclantern.2025-06-20.50D.109`) under `vendor/magiclantern/`,
-copies `integrations/magiclantern/50D.109/` over that tree, and builds
-`platform/50D.109`. The platform Makefile compiles `engine/` into the
-same image. You need `arm-none-eabi-gcc` (`ARM_BINPATH`) and, on
-Windows, Git's `usr\bin` on `PATH` so the Magic Lantern makefiles can
-find `sh`.
+(`2025_release_01`) under `vendor/magiclantern/`, copies
+`integrations/magiclantern/_common/` then the platform overlay, and builds
+`platform/<PLATFORM>`. Shared Film sources live in `_common/`; per-camera
+playback sizes and Makefiles live under each platform directory.
 
-Copy `build/autoexec.bin` to `AUTOEXEC.BIN` on the card and
-`build/50D_109.sym` to `ML/modules/50D_109.sym` in the same breath.
-Modules call addresses out of that sym file.
+| Platform | Boot object | Firmware | Sym on card |
+|:--|:--|:--|:--|
+| `50D.109` | `boot-d45.o` | 1.0.9 | `ML/modules/50D_109.sym` |
+| `6D.116` | `boot-d45-am.o` (AllocateMemory) | 1.1.6 | `ML/modules/6D_116.sym` |
+| `5D3.123` | `boot-d45.o` | 1.2.3 | `ML/modules/5D3_123.sym` |
+
+You need `arm-none-eabi-gcc` (`ARM_BINPATH`) and, on Windows, Git's
+`usr\bin` on `PATH` so the Magic Lantern makefiles can find `sh`.
 
 * Their source: <https://github.com/reticulatedpines/magiclantern_simplified>
-* The 50D build this was made from: <https://builds.magiclantern.fm/50D.html>
+* Builds: <https://builds.magiclantern.fm/>
 
 ## Licence
 

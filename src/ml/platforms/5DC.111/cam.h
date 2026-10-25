@@ -188,6 +188,7 @@ static inline int cam_ram_ptr_ok(uintptr_t p)
  *     mov ip, r1 ; mov r3, r2 ; mov r1, r0 ; mov r2, ip ; mov r0, #0
  */
 #define CAM_GUI_Control     0xFF8190D0
+#define CAM_EngDrvOut       0x00000000   /* Digic II: unused (see mlmap LCD macros) */
 #define SE_BGMT_MENU        3
 #define SE_FAKE_BTN         (-123456)
 

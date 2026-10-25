@@ -1,5 +1,5 @@
 /** \file
- * Film stock row for the 50D Soup Engine.
+ * Film stock row for the Soup Engine (Film-in-ML bodies).
  *
  * One Magic Lantern menu page. The wheel changes an integer through the
  * normal choices path. The name list is read once, from ML/FILM/INDEX.TXT

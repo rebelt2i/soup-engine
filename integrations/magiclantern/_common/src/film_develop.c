@@ -18,15 +18,27 @@
 #include "look.h"
 #include "jpeg_dec.h"
 #include "jpeg_enc.h"
+#include "soup_cam.h"
 
 #define FILM_HDR     (256 * 1024)
 #define FILM_SCRATCH (768 * 1024)
 #define FILM_JPEG    (2 * 1024 * 1024)
 #define FILM_SCALE   2
-/* The 50D only plays back its own Small JPEG size. */
-#define FILM_PLAY_W  2352
-#define FILM_PLAY_H  1568
-#define FILM_MIN_CR2 (6u * 1024 * 1024)
+#ifndef FILM_PLAY_W
+#error "soup_cam.h must define FILM_PLAY_W"
+#endif
+#ifndef FILM_PLAY_H
+#error "soup_cam.h must define FILM_PLAY_H"
+#endif
+#ifndef FILM_MIN_CR2
+#error "soup_cam.h must define FILM_MIN_CR2"
+#endif
+#ifndef FILM_MODEL_FALLBACK
+#error "soup_cam.h must define FILM_MODEL_FALLBACK"
+#endif
+#ifndef FILM_PROGRESS_Y
+#define FILM_PROGRESS_Y (480 - 48)
+#endif
 #define FILM_LOOKBACK 20
 
 extern int ml_started;
@@ -55,7 +67,7 @@ static void film_show(int hundredths)
     if (film_shown_ms && hundredths < 10000 && (now - film_shown_ms) < 100) return;
     film_shown = hundredths;
     film_shown_ms = now;
-    NotifyBoxAt(16, 480 - 48, 600000, "FILM %s %d,%02d%%",
+    NotifyBoxAt(16, FILM_PROGRESS_Y, 600000, "FILM %s %d,%02d%%",
                 film_job, hundredths / 100, hundredths % 100);
 }
 static se_stock film_cached;
@@ -387,7 +399,7 @@ static int film_develop(const char *cr2, const char *jpg, se_stock *stock)
 
     memset(&ex, 0, sizeof ex);
     ex.make = info.make[0] ? info.make : "Canon";
-    ex.model = info.model[0] ? info.model : "Canon EOS 50D";
+    ex.model = info.model[0] ? info.model : FILM_MODEL_FALLBACK;
     ex.software = stock->name;
     ex.datetime = info.datetime;
     ex.exposure_time = info.exposure_time;

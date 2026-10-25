@@ -1,0 +1,22 @@
+{
+  "name": "40D.111",
+  "vendor": "magiclantern-40D",
+  "vendor_hint": "experimental VxWorks ML for firmware 1.1.1 — no official builds.magiclantern.fm page",
+  "vendor_build": "UNCONFIRMED — place autoexec.bin under src/vendor/magiclantern-40D/",
+  "holes_confirmed": false,
+  "stock_size": 0,
+  "restart": "0x00B80000",
+  "payload_off": "0x1000",
+  "payload_base": "0x00BD0000",
+  "stub_style": "single",
+  "stub_addr": "0x00B80820",
+  "stub_limit": "0x00B8090C",
+  "gui_bl_site": "0x00B89DB4",
+  "gui_handler": "0x00B8A0F0",
+  "init_literal": "0x00B80774",
+  "ml_init_task": "0x00B80440",
+  "magic_tag": "",
+  "checksum": "none",
+  "card_copy": true,
+  "notes": "All stub/gui/init addresses above are structural placeholders copied from the 5DC layout shifted to RESTARTSTART 0xB80000. They WILL NOT match a real 40D AUTOEXEC until rediscovered. patch-film.py refuses to run while holes_confirmed is false."
+}
