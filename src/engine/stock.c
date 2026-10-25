@@ -283,12 +283,20 @@ se_err se_stock_parse(const char *text, size_t len, se_stock *s)
      * picture and nothing else. Naming the version and the keys turns a
      * mystery into a sentence.
      */
-    if (s->version > SE_STOCK_VERSION)
+    if (s->version > SE_STOCK_VERSION) {
+        /* Refuse rather than load a look that cannot be what the author
+         * wrote. Skipping unknown keys used to keep an old engine running
+         * on a new file, but the picture was silently wrong -- the card
+         * menu showed the stock and nothing said the grade was incomplete.
+         * SE_E_UNSUPPORTED is the same code CR2 uses for a variant we
+         * recognise but cannot develop. */
         se_log("stock '%s': written for format v%d, this engine speaks v%d"
-               "%s%s -- it will not look as intended",
+               "%s%s -- refusing it",
                s->name, s->version, SE_STOCK_VERSION,
-               nunknown ? "; ignored: " : "", nunknown ? unknown : "");
-    else if (nunknown)
+               nunknown ? "; unknown keys: " : "", nunknown ? unknown : "");
+        return SE_E_UNSUPPORTED;
+    }
+    if (nunknown)
         se_log("stock '%s': ignored %d unknown key%s (%s)",
                s->name, nunknown, nunknown == 1 ? "" : "s", unknown);
 

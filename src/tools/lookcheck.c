@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "look.h"
+#include "stock.h"
 
 static int clampi(int v, int lo, int hi) { return v < lo ? lo : (v > hi ? hi : v); }
 static int cl8(int v) { return clampi(v, 0, 255); }
@@ -203,8 +204,8 @@ static void reference(const se_look *lk, const uint8_t *in, int w, int h,
             /* Halation only shows bleeding into something darker: where
              * the emulsion is already saturated a second exposure adds
              * nothing. Weight by the headroom left in the destination. */
-            a = (a * (255 - luma8(out[(y*w+x)*3+0], out[(y*w+x)*3+1],
-                                  out[(y*w+x)*3+2]))) / 255;
+            a = (a * (255 - luma(out[(y*w+x)*3+0], out[(y*w+x)*3+1],
+                                 out[(y*w+x)*3+2]))) / 255;
             if (a <= 0) continue;
             for (c = 0; c < 3; c++)
                 out[(y*w+x)*3+c] =
@@ -279,6 +280,74 @@ static int run_case(const char *what, const se_look *lk,
     printf("  %-34s ok (%d rows, chunk %d)\n", what, h, chunk);
     free(mem); free(ref); free(sk.buf);
     return 0;
+}
+
+/* Load a .fs from disk. Tries the paths make test uses when cwd is src/. */
+static char *read_stock_text(const char *name, size_t *out_len)
+{
+    static const char *dirs[] = { "stocks", "../stocks", "src/stocks", NULL };
+    char path[256];
+    int i;
+    for (i = 0; dirs[i]; i++) {
+        FILE *f;
+        long  sz;
+        char *buf;
+        snprintf(path, sizeof path, "%s/%s", dirs[i], name);
+        f = fopen(path, "rb");
+        if (!f) continue;
+        fseek(f, 0, SEEK_END);
+        sz = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        if (sz <= 0) { fclose(f); continue; }
+        buf = malloc((size_t)sz + 1);
+        if (!buf) { fclose(f); return NULL; }
+        if (fread(buf, 1, (size_t)sz, f) != (size_t)sz) {
+            free(buf); fclose(f); continue;
+        }
+        fclose(f);
+        buf[sz] = 0;
+        *out_len = (size_t)sz;
+        return buf;
+    }
+    return NULL;
+}
+
+/*
+ * soup800.fs is the only stock that turns on halation, hue, split and
+ * grain together. Synthetic se_look fields above prove the machinery;
+ * this proves the real authored parameters survive se_look_from_stock
+ * and still match the independent reference.
+ */
+static int run_real_stock(const uint8_t *in, int w, int h)
+{
+    size_t   len = 0;
+    char    *txt = read_stock_text("soup800.fs", &len);
+    se_stock st;
+    se_look  lk;
+    int      chunks[] = { 1, 7, 16 };
+    int      ci, fails = 0;
+
+    if (!txt) {
+        printf("  %-34s SKIP (stocks/soup800.fs not found)\n", "soup800.fs");
+        return 0;
+    }
+    if (se_stock_parse(txt, len, &st) != SE_OK) {
+        printf("  %-34s parse FAILED\n", "soup800.fs");
+        free(txt);
+        return 1;
+    }
+    free(txt);
+    if (st.hal_amount < 1.0f) {
+        printf("  %-34s has no halation -- wrong reference stock\n", st.name);
+        return 1;
+    }
+    se_look_from_stock(&st, 2, &lk);
+    for (ci = 0; ci < (int)(sizeof chunks / sizeof *chunks); ci++) {
+        char nm[64];
+        snprintf(nm, sizeof nm, "soup800 chunk %d", chunks[ci]);
+        fails += run_case(nm, &lk, in, w, h, chunks[ci]);
+    }
+    return fails;
 }
 
 int main(void)
@@ -362,6 +431,10 @@ int main(void)
         fails += run_case(nm, &lk, in, w, h, c);
     }
 
+    printf("\nreal stock (soup800.fs):\n");
+    fails += run_real_stock(in, w, h);
+
     printf(fails ? "\nFAILED (%d cases)\n" : "\nall cases agree\n", fails);
+    free(in);
     return fails ? 1 : 0;
 }

@@ -18,12 +18,18 @@ all:
 	@$(MAKE) -s -C host
 
 # The checks that need no sample files. Run this one by default.
-test: all
+# lookcheck is a separate binary on purpose: its reference reimplements the
+# look stages longhand, so a shared object with look.o could not catch
+# look.c. Rebuild it from sources every time, same reason previewcheck is
+# not left to go stale under make all.
+test: all out/lookcheck
 	@./filmdev selftest
+	@./out/lookcheck
 
 # Everything, including the sample-driven checks and the sanitiser build.
-test-full: all
+test-full: all out/lookcheck
 	@./filmdev selftest
+	@./out/lookcheck
 	@echo
 	@for f in $(SAMPLES); do ./filmdev stress $$f 200 || exit 1; echo; done
 	@echo "--- rebuilding under ASan + UBSan ---"
@@ -104,6 +110,15 @@ PREVIEW_SRC = tools/previewcheck.c engine/se.c engine/wb.c engine/cr2.c \
 out/previewcheck: $(PREVIEW_SRC) $(wildcard engine/*.h)
 	@mkdir -p out
 	@$(CAMTEST_CC) -o $@ $(PREVIEW_SRC) -lm
+
+# Streaming look vs an independent whole-image reference. No CR2 needed.
+# Linked the same way as previewcheck so look.c edits rebuild it.
+LOOKCHECK_SRC = tools/lookcheck.c engine/se.c engine/wb.c engine/lut.c \
+	        engine/stock.c engine/grade.c engine/look.c
+
+out/lookcheck: $(LOOKCHECK_SRC) $(wildcard engine/*.h)
+	@mkdir -p out
+	@$(CAMTEST_CC) -o $@ $(LOOKCHECK_SRC) -lm
 
 # The camera build. Produces two files for the card:
 #   ml/build/AUTOEXEC.BIN  Magic Lantern for $(PLATFORM), loader and hook patched in

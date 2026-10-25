@@ -19,12 +19,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/param.h>
-#include <sys/mount.h>
 #include <errno.h>
+#ifdef __APPLE__
+#include <sys/mount.h>
+#else
+#include <sys/vfs.h>
+#endif
 
 static void log_cb(void *ctx, const char *msg)
 {
@@ -1059,7 +1064,9 @@ static int check_card(const char *root)
 
     if (statfs(root, &sfs) == 0) {
         double gb = (double)sfs.f_blocks * (double)sfs.f_bsize / 1073741824.0;
+#ifdef __APPLE__
         printf("  filesystem      : %s\n", sfs.f_fstypename);
+#endif
         printf("  card size       : %.2f GB\n", gb);
         if (gb > 2.0) {
             printf("                    <- LARGER THAN 2 GB.\n"
@@ -1069,6 +1076,7 @@ static int check_card(const char *root)
                    "                       Use a 2 GB or smaller card for the update.\n");
             problems++;
         }
+#ifdef __APPLE__
         if (strstr(sfs.f_fstypename, "msdos") == NULL &&
             strstr(sfs.f_fstypename, "exfat") == NULL) {
             printf("                    <- not a FAT filesystem; the camera cannot read it\n");
@@ -1077,6 +1085,7 @@ static int check_card(const char *root)
             printf("                    <- exFAT. This camera needs FAT16/FAT32.\n");
             problems++;
         }
+#endif
     }
     printf("\n");
 
@@ -1755,6 +1764,68 @@ static int test_stock_roundtrip(void)
         }
     }
 
+    /*
+     * Hue / split / halation: the keys that live only on the JPEG path.
+     * Curves alone used to be the roundtrip; a silent drop of HUE_ROT or
+     * HALATION would still pass that and only show up on a photograph.
+     */
+    {
+        static const char *hs =
+            "VERSION   3\n"
+            "NAME      HUEY\n"
+            "SAT       120\n"
+            "HUE_SAT   110,70,55,80,95,105\n"
+            "HUE_ROT   0,-8,-14,6,10,-3\n"
+            "HUE_LUM   104,96,88,98,82,100\n"
+            "SPLIT_SH  -6,0,10\n"
+            "SPLIT_HI  10,4,-6\n"
+            "HALATION  40 190 14\n"
+            "HAL_TINT  255,64,24\n"
+            "GRAIN     20\n"
+            "GRAIN_SIZE 30\n";
+        se_stock h;
+        se_look  lk;
+        static const float want_sat[6] = {110,70,55,80,95,105};
+        static const float want_rot[6] = {0,-8,-14,6,10,-3};
+        static const float want_lum[6] = {104,96,88,98,82,100};
+        int c;
+
+        if (se_stock_parse(hs, strlen(hs), &h) != SE_OK) {
+            printf("        hue/split/halation stock failed to parse\n"); ok = 0;
+        } else {
+            for (c = 0; c < 6; c++) {
+                if (h.hue_sat[c] < want_sat[c] - 0.1f ||
+                    h.hue_sat[c] > want_sat[c] + 0.1f ||
+                    h.hue_rot[c] < want_rot[c] - 0.1f ||
+                    h.hue_rot[c] > want_rot[c] + 0.1f ||
+                    h.hue_lum[c] < want_lum[c] - 0.1f ||
+                    h.hue_lum[c] > want_lum[c] + 0.1f) {
+                    printf("        hue sector %d: sat=%g rot=%g lum=%g\n",
+                           c, h.hue_sat[c], h.hue_rot[c], h.hue_lum[c]);
+                    ok = 0;
+                }
+            }
+            if (h.split_sh[0] > -5.9f || h.split_sh[2] < 9.9f ||
+                h.split_hi[0] < 9.9f  || h.split_hi[2] > -5.9f) {
+                printf("        split tone did not round trip\n"); ok = 0;
+            }
+            if (h.hal_amount < 39.9f || h.hal_thresh < 189.9f ||
+                h.hal_radius < 13.9f || h.hal_tint[0] < 254.9f) {
+                printf("        halation did not round trip: amt=%g thr=%g r=%g tint=%g\n",
+                       h.hal_amount, h.hal_thresh, h.hal_radius, h.hal_tint[0]);
+                ok = 0;
+            }
+            se_look_from_stock(&h, 2, &lk);
+            if (!lk.hue_any) {
+                printf("        se_look_from_stock dropped per-hue controls\n");
+                ok = 0;
+            }
+            if (lk.hal_amount < 1 || lk.hal_radius < 1) {
+                printf("        se_look_from_stock dropped halation\n"); ok = 0;
+            }
+        }
+    }
+
     se_stock_bake(&st, tone);
     /* blue lifts its floor, so black must not stay at zero */
     if (tone[2].v[0] == 0) { printf("        blue floor did not lift\n"); ok = 0; }
@@ -1764,6 +1835,130 @@ static int test_stock_roundtrip(void)
         ok = 0;
     }
     if (ok) printf("        every stated field round trips, curves bake as declared\n");
+    return ok;
+}
+
+/*
+ * A file written for a newer format must not load as a half-understood
+ * look. Soft-loading used to leave the stock in the menu with a log line
+ * and a wrong picture; refusing it is the contract selftest pins down.
+ */
+static int test_stock_version_reject(void)
+{
+    static const char *src =
+        "VERSION   99\n"
+        "NAME      FUTURE\n"
+        "CURVE     0,0 255,255\n";
+    se_stock st;
+    se_err   e = se_stock_parse(src, strlen(src), &st);
+    if (e == SE_OK) {
+        printf("        VERSION 99 was accepted (engine speaks %d)\n",
+               SE_STOCK_VERSION);
+        return 0;
+    }
+    if (e != SE_E_UNSUPPORTED) {
+        printf("        expected SE_E_UNSUPPORTED, got %d\n", e);
+        return 0;
+    }
+    printf("        VERSION ahead of the engine is refused\n");
+    return 1;
+}
+
+/* Every shipped .fs must parse and bake into a look the camera can run. */
+static int test_all_stocks(void)
+{
+    int i, n, ok = 1;
+    if (!scan_stocks()) {
+        printf("        no stocks in %s/\n", stock_dir());
+        return 0;
+    }
+    n = g_stock_n;
+    for (i = 0; i < n; i++) {
+        size_t len;
+        void  *txt = read_file(g_stock_path[i], &len);
+        se_stock st;
+        se_look  lk;
+        static se_lut1 tone[3];
+        uint8_t  map[3][256];
+        const char *slash = strrchr(g_stock_path[i], '/');
+        const char *base  = slash ? slash + 1 : g_stock_path[i];
+
+        if (!txt) {
+            printf("        cannot read %s\n", base); ok = 0; continue;
+        }
+        if (se_stock_parse((const char *)txt, len, &st) != SE_OK) {
+            printf("        parse failed: %s\n", base); ok = 0;
+            free(txt); continue;
+        }
+        if (st.name[0] == 0) {
+            printf("        empty NAME: %s\n", base); ok = 0;
+        }
+        if (st.version > SE_STOCK_VERSION) {
+            printf("        %s asks for VERSION %d\n", base, st.version); ok = 0;
+        }
+        se_stock_bake(&st, tone);
+        se_stock_bake_srgb8(&st, map);
+        se_look_from_stock(&st, 2, &lk);
+        free(txt);
+    }
+    if (ok) printf("        %d stocks parse, bake and resolve to a look\n", n);
+    return ok;
+}
+
+/*
+ * Halation's delay line is sized for the camera's heap budget. A radius
+ * that does not fit must shrink (and eventually disable) until begin
+ * succeeds -- desktop and camera share this path, so a fit that only works
+ * on one of them is a false green.
+ */
+static int test_look_fit_budget(void)
+{
+    se_look      lk;
+    se_look_run *run = NULL;
+    se_arena     ar;
+    void        *mem;
+    size_t       need, before;
+    int          w = 5616;   /* full-width 5D Classic preview */
+    int          ok = 1;
+
+    memset(&lk, 0, sizeof lk);
+    { int x; for (x = 0; x < 256; x++)
+        lk.map[0][x] = lk.map[1][x] = lk.map[2][x] = (uint8_t)x; }
+    lk.sat = 256;
+    { int k; for (k = 0; k < 6; k++) {
+        lk.hue_sat[k] = 256; lk.hue_lum[k] = 256; lk.hue_rot[k] = 0; } }
+    lk.hal_amount = 185;
+    lk.hal_thresh = 228;
+    lk.hal_radius = 48;
+    lk.hal_tint[0] = 255; lk.hal_tint[1] = 58; lk.hal_tint[2] = 28;
+
+    before = se_look_bytes(&lk, w);
+    if (before <= SE_LOOK_BUDGET) {
+        printf("        radius 48 already fits budget; widen the case\n");
+        return 0;
+    }
+    need = se_look_fit(&lk, w, SE_LOOK_BUDGET);
+    if (need > SE_LOOK_BUDGET) {
+        printf("        se_look_fit left need=%lu above budget %d\n",
+               (unsigned long)need, SE_LOOK_BUDGET);
+        return 0;
+    }
+    if (lk.hal_radius >= 48 && lk.hal_amount > 0) {
+        printf("        se_look_fit did not shrink radius (still %d)\n",
+               lk.hal_radius);
+        return 0;
+    }
+
+    mem = malloc(SE_LOOK_BUDGET);
+    if (!mem) { printf("        oom\n"); return 0; }
+    se_arena_init(&ar, mem, SE_LOOK_BUDGET);
+    if (se_look_begin(&run, &lk, w, &ar) != SE_OK) {
+        printf("        se_look_begin failed after fit (radius=%d amount=%d)\n",
+               lk.hal_radius, lk.hal_amount);
+        ok = 0;
+    }
+    free(mem);
+    if (ok) printf("        halation shrinks to fit SE_LOOK_BUDGET and begins\n");
     return ok;
 }
 
@@ -2071,6 +2266,9 @@ static int run_selftest(void)
     check(test_ui_navigation(),     "menu navigation keeps every value in range");
     check(test_ui_coverage(),       "every menu screen draws inside the overlay buffer");
     check(test_stock_roundtrip(),   "a film stock round trips through its text format");
+    check(test_stock_version_reject(),"a stock from a newer format is refused");
+    check(test_all_stocks(),        "every shipped stock parses and bakes");
+    check(test_look_fit_budget(),   "halation shrinks to the camera look budget");
     check(test_curve_monotonic(),   "point curves stay monotonic and inside [0,1]");
     check(fuzz_parsers(),           "corrupt and truncated files are rejected, never crash");
     printf("%s (%d failure%s)\n", fail_count ? "FAILED" : "all passed",

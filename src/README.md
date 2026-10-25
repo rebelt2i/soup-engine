@@ -50,11 +50,17 @@ Day-to-day install for each body is in the root [README](../README.md).
 
 ```sh
 make all        # the desktop tools
-make test       # the host suite
+make test       # host selftest + lookcheck (no CR2 needed)
 make simtest    # the real payload against a mock camera, byte for byte
 make arm        # check the engine still builds freestanding for ARM946E-S
 make payload    # SE.BIN for Classic (needs PLATFORM=5DC.111 or 40D.111)
 ```
+
+`make test` is the default gate: `filmdev selftest` (debayer, stocks,
+parsers, look budget, …) and `out/lookcheck` (streaming look vs an
+independent whole-image reference, including `soup800.fs`). No sample
+raws required. `make simtest` needs a CR2 under `samples/` and a POSIX
+host (`pthread`); that is the byte-exact camera/desktop contract.
 
 You need `arm-none-eabi-gcc` for the camera build and nothing unusual
 for the rest.

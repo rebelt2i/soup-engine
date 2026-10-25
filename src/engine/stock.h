@@ -32,15 +32,17 @@
  *   2  + SAT, SPLIT_SH/HI, HALATION, HAL_TINT, GRAIN_SIZE
  *   3  + HUE_SAT, HUE_ROT, HUE_LUM, and the [RAW] override block
  *
- * This exists because unknown keys are ignored on purpose, so a stock
- * written by something newer than the engine reading it produces no
- * error and the wrong picture. Six changes to engine/look.c in one
- * session each altered the output of an unchanged .fs file, and two of
- * them added keys. Someone tuning a stock in one place and shooting it
- * in another has no way to tell, and will assume they mis-tuned it.
+ * This exists because unknown keys are ignored on purpose: a stock
+ * written by something newer used to load with no error and the wrong
+ * picture. Six changes to engine/look.c in one session each altered the
+ * output of an unchanged .fs file, and two of them added keys. Someone
+ * tuning a stock in one place and shooting it in another had no way to
+ * tell, and assumed they mis-tuned it.
  *
- * So a file may say which generation it was written for, and the engine
- * says so when it cannot keep up.
+ * So a file may say which generation it was written for. A VERSION
+ * ahead of SE_STOCK_VERSION is refused (SE_E_UNSUPPORTED) rather than
+ * half-applied; unknown keys on a supported generation are still skipped
+ * with a log line.
  */
 #define SE_STOCK_VERSION 3
 
