@@ -337,8 +337,15 @@ static int prepare_card(const char *root)
 
     for (i = 0; i < n; i++) {
         const char *slash = strrchr(g_stock_path[i], '/');
-        snprintf(path, sizeof path, "%s/ML/FILM/%s", root,
-                 slash ? slash + 1 : g_stock_path[i]);
+        const char *base  = slash ? slash + 1 : g_stock_path[i];
+        /* Precision caps keep -Wformat-truncation quiet: root and basename
+         * are otherwise unbounded from the compiler's point of view. */
+        int pn = snprintf(path, sizeof path, "%.500s/ML/FILM/%.480s",
+                          root, base);
+        if (pn < 0 || (size_t)pn >= sizeof path) {
+            fprintf(stderr, "filmdev: path too long for %s\n", base);
+            return 1;
+        }
         if (copy_file(g_stock_path[i], path) != 0) {
             fprintf(stderr, "filmdev: cannot write %s\n", path);
             return 1;
@@ -2337,8 +2344,10 @@ static int dump_ui(const char *dir)
             se_stock st;
             if (!txt) continue;
             if (se_stock_parse((const char *)txt, slen, &st) == SE_OK) {
-                snprintf(names[nstocks], sizeof names[0], "%s", st.name);
-                snprintf(descs[nstocks], sizeof descs[0], "%s", st.desc);
+                memcpy(names[nstocks], st.name, sizeof names[0]);
+                names[nstocks][sizeof names[0] - 1] = '\0';
+                memcpy(descs[nstocks], st.desc, sizeof descs[0]);
+                descs[nstocks][sizeof descs[0] - 1] = '\0';
                 stocks[nstocks].name = names[nstocks];
                 stocks[nstocks].desc = descs[nstocks];
                 nstocks++;
@@ -2392,9 +2401,10 @@ static int dump_ui(const char *dir)
         u.screen = SE_SCREEN_STOCK;
         u.stock  = i;
         se_ui_draw(&u, &fb);
-        snprintf(safe, sizeof safe, "%s", names[i]);
+        memcpy(safe, names[i], sizeof safe);
+        safe[sizeof safe - 1] = '\0';
         for (q = safe; *q; q++) if (*q == ' ' || *q == '/') *q = '_';
-        snprintf(path, sizeof path, "%s/film_%s.fb", dir, safe);
+        snprintf(path, sizeof path, "%.400s/film_%.80s.fb", dir, safe);
         f = fopen(path, "wb");
         if (!f) continue;
         fwrite(fbmem, 1, sizeof fbmem, f);
