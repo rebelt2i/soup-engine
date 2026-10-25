@@ -2206,17 +2206,39 @@ static int test_jpeg_half(void)
         if (wf > 2) ok = 0;
     }
 
-    /* --- 2. an odd size rounds up rather than dropping a column -------- */
+    /* --- 2. odd *coded* size rounds up; encode truncates to MCU grid ---
+     *
+     * se_jpeg_scaled_size is what the decoder uses for SOF dimensions: a
+     * 61x37 frame must deliver 31x19 at scale 2, not drop the last column.
+     *
+     * The host encoder, however, shrinks SOF to a 16x8-friendly size
+     * (Canon playback rejects odd widths under 4:2:2), so 61x37 is written
+     * as 48x32. Half of that is 24x16 -- assert both contracts separately.
+     */
+    {
+        int sw = 0, sh = 0;
+        se_jpeg_scaled_size(61, 37, 2, &sw, &sh);
+        if (sw != 31 || sh != 19) {
+            printf("        scaled_size(61,37,/2): %dx%d, wanted 31x19\n",
+                   sw, sh);
+            ok = 0;
+        } else {
+            printf("        scaled_size(61,37,/2): %dx%d (rounds up)\n",
+                   sw, sh);
+        }
+    }
     for (y = 0; y < 37; y++)
         for (x = 0; x < 61; x++)
             for (c = 0; c < 3; c++)
                 rgb[(y * 61 + x) * 3 + c] = (uint8_t)(40 + x + y);
     if (!jh_encode(rgb, 61, 37, 90)) { free(g_jh_buf); return 0; }
-    if (!jh_decode(2, 61, 37, half, &ow, &oh) || ow != 31 || oh != 19) {
-        printf("        61x37 at half size: decoded %dx%d, wanted 31x19\n", ow, oh);
+    if (!jh_decode(2, 61, 37, half, &ow, &oh) || ow != 24 || oh != 16) {
+        printf("        61x37 encode truncates to 48x32; half got %dx%d, "
+               "wanted 24x16\n", ow, oh);
         ok = 0;
     } else {
-        printf("        61x37 at half size: %dx%d, all rows delivered\n", ow, oh);
+        printf("        61x37 via encoder (48x32) at half size: %dx%d\n",
+               ow, oh);
     }
 
     /* --- 3. smooth content agrees with the full decode, averaged ------- */
