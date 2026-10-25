@@ -2241,13 +2241,19 @@ static int test_jpeg_half(void)
                ow, oh);
     }
 
-    /* --- 3. smooth content agrees with the full decode, averaged ------- */
+    /* --- 3. smooth content agrees with the full decode, averaged -------
+     *
+     * All three channels must be smooth. A previous blue term used
+     * `((x+y)*2 & 63)`, a sawtooth with hard wraps; half-IDCT (drops high
+     * coefficients) and a 2x2 box of the full decode then disagreed by
+     * ~25 counts and tripped the thresholds below.
+     */
     for (y = 0; y < H; y++)
         for (x = 0; x < W; x++) {
             uint8_t *p = rgb + (size_t)(y * W + x) * 3;
             p[0] = (uint8_t)(30 + x * 3);
             p[1] = (uint8_t)(200 - y * 3);
-            p[2] = (uint8_t)(90 + ((x + y) * 2 & 63));
+            p[2] = (uint8_t)(90 + x + y);
         }
     if (!jh_encode(rgb, W, H, 96)) { free(g_jh_buf); return 0; }
     if (!jh_decode(1, W, H, full, &ow, &oh) || ow != W || oh != H) ok = 0;
