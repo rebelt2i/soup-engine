@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to create or update (e.g. v0.2.0-beta)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish per-body zips
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc make python3 git gcc-arm-none-eabi zip
+
+      - name: Host tests
+        run: make -C src test && make -C src arm
+
+      - name: Build Classic SE.BIN
+        run: |
+          make -C src/ml/payload PLATFORM=5DC.111
+          mkdir -p dist/classic-stage
+          cp card/AUTOEXEC.BIN dist/classic-stage/AUTOEXEC.BIN
+          cp src/ml/payload/soupeng.bin dist/classic-stage/SE.BIN
+
+      - name: Build Film-in-ML 50D.109
+        env:
+          ARM_BINPATH: /usr/bin
+        run: python3 src/tools/build-ml.py --platform 50D.109
+
+      - name: Build Film-in-ML 6D.116
+        env:
+          ARM_BINPATH: /usr/bin
+        run: python3 src/tools/build-ml.py --platform 6D.116
+
+      - name: Build Film-in-ML 5D3.123
+        env:
+          ARM_BINPATH: /usr/bin
+        run: python3 src/tools/build-ml.py --platform 5D3.123
+
+      - name: Pack release zips
+        run: |
+          python3 src/tools/pack-release.py \
+            --tag "${{ steps.tag.outputs.name }}" \
+            --classic-dir dist/classic-stage
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          NOTES=$(mktemp)
+          cat > "$NOTES" << EOF
+          ## Soup Engine ${TAG}
+
+          Prebuilt card packages — pick the zip for your camera. No compiler required.
+
+          | Camera | Firmware | Asset |
+          |--------|----------|-------|
+          | EOS 5D Classic | 1.1.1 | \`soup-engine-${TAG}-5DC.111.zip\` |
+          | EOS 50D | 1.0.9 | \`soup-engine-${TAG}-50D.109.zip\` |
+          | EOS 6D Mark I | 1.1.6 | \`soup-engine-${TAG}-6D.116.zip\` |
+          | EOS 5D Mark III | 1.2.3 | \`soup-engine-${TAG}-5D3.123.zip\` |
+
+          Each zip includes \`LICENSE\`, \`NOTICE\`, and \`INSTALL.txt\`.
+
+          **Before installing:** install stock Magic Lantern for that firmware, back up \`AUTOEXEC.BIN\` (and the matching \`.sym\` on 50D / 6D / 5D3).
+
+          **Beta.** Unofficial. No warranty (GPL §§11–12). Not affiliated with Canon, Fujifilm, Kodak, Adobe, or Magic Lantern. Film names are trademarks of their owners.
+
+          **Corresponding source:** this tag (\`${TAG}\`) of this repository.
+          Magic Lantern pin: \`ed3e7c0d\` (\`2025_release_01\`). See \`NOTICE\`.
+          EOF
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/soup-engine-${TAG}-*.zip --clobber
+            gh release edit "$TAG" --notes-file "$NOTES"
+          else
+            gh release create "$TAG" dist/soup-engine-${TAG}-*.zip \
+              --title "Soup Engine ${TAG}" \
+              --notes-file "$NOTES"
+          fi

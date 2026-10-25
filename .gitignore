@@ -1,5 +1,6 @@
 vendor/
 rom/
+dist/
 src/out/
 src/ml/payload/*.o
 src/ml/payload/*.d

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  host-test:
+    name: Host tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc make python3 gcc-arm-none-eabi
+
+      - name: make test
+        run: make -C src test
+
+      - name: make arm
+        run: make -C src arm
+
+  classic-payload:
+    name: Classic SE.BIN (5DC.111)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make gcc-arm-none-eabi
+
+      - name: Build SE.BIN payload
+        run: make -C src/ml/payload PLATFORM=5DC.111
+
+      - name: Upload SE.BIN
+        uses: actions/upload-artifact@v4
+        with:
+          name: classic-se-bin
+          path: src/ml/payload/soupeng.bin
+
+  film-ml:
+    name: Film-in-ML ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [50D.109, 6D.116, 5D3.123]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make python3 git gcc-arm-none-eabi
+
+      - name: Build Magic Lantern with Film page
+        env:
+          ARM_BINPATH: /usr/bin
+        run: python3 src/tools/build-ml.py --platform ${{ matrix.platform }}
+
+      - name: Upload AUTOEXEC and sym
+        uses: actions/upload-artifact@v4
+        with:
+          name: film-ml-${{ matrix.platform }}
+          path: |
+            src/vendor/magiclantern/platform/${{ matrix.platform }}/build/autoexec.bin
+            src/vendor/magiclantern/platform/${{ matrix.platform }}/build/*.sym

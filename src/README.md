@@ -3,6 +3,11 @@
 All of it. The engine, the camera payload, the desktop tools, the
 simulator and the film stocks.
 
+**Photographers:** you do not need this folder. Download a per-body zip
+from [Releases](https://github.com/rebelt2i/soup-engine-50d/releases/latest)
+and follow the root [README](../README.md). Build steps for developers are
+also summarised in [`docs/BUILD.md`](../docs/BUILD.md).
+
 ## Layout
 
 | | |
@@ -126,4 +131,5 @@ You need `arm-none-eabi-gcc` (`ARM_BINPATH`) and, on Windows, Git's
 
 ## Licence
 
-GPL v2. See [../LICENSE](../LICENSE).
+GPL v2. See [../LICENSE](../LICENSE). Third-party and trademark notices:
+[../NOTICE](../NOTICE).

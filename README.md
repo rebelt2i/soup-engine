@@ -17,24 +17,22 @@
 
 <br>
 
-The same look engine runs on every supported body. How you install it, and
-how you pick a stock, depends on the camera family — see **Installing** and
-**Using it** below.
+The same look engine runs on every supported body. You install a **zip for
+your camera** — no compiler, no build steps.
 
-| Camera | Firmware | Install path | UI |
+| Camera | Firmware | Download | After install |
 |:--|:--|:--|:--|
-| EOS 5D Classic | 1.1.1 | Classic (`SE.BIN` + patch) | Trash-button picker |
-| EOS 40D | 1.1.1 | Classic (`SE.BIN` + patch) | Trash-button picker (**experimental**) |
-| EOS 50D | 1.0.9 | Film-in-ML rebuild | Magic Lantern **Film** page |
-| EOS 6D Mark I | 1.1.6 | Film-in-ML rebuild | Magic Lantern **Film** page |
-| EOS 5D Mark III | **1.2.3** | Film-in-ML rebuild | Magic Lantern **Film** page |
+| EOS 5D Classic | 1.1.1 | `…-5DC.111.zip` | Trash-button picker |
+| EOS 50D | 1.0.9 | `…-50D.109.zip` | Magic Lantern **Film** page |
+| EOS 6D Mark I | 1.1.6 | `…-6D.116.zip` | Magic Lantern **Film** page |
+| EOS 5D Mark III | **1.2.3** | `…-5D3.123.zip` | Magic Lantern **Film** page |
 
 ```
-# Classic (5D Classic, 40D)
+# 5D Classic
 IMG_1234.CR2        your raw file, untouched
 IMG_1234.FLM.JPG    the same photo with the look on it
 
-# Film-in-ML (50D, 6D, 5D Mark III)
+# 50D / 6D / 5D Mark III
 IMG_1234.CR2        your raw file (preview updated when Delete CR2 is off)
 FLM_1234.JPG        the same photo with the look on it
 ```
@@ -50,17 +48,18 @@ All thirteen, one frame, straight off the card.
 <br>
 
 > ⚠️ **Beta.** Unofficial code on old cameras. It's easy to remove.
-> Only the firmwares in the table above are in scope; other bodies and
-> firmware versions are not. The **40D** port is experimental: there is no
-> official Magic Lantern build, and card I/O must be proven first.
+> Only the firmwares in the table above are in scope. Other bodies and
+> firmware versions are not.
 
 > ⚖️ **No warranty.** Like all GPL software this comes with none. You
 > install it at your own risk. See sections 11 and 12 of the
 > [licence](LICENSE).
 
 > 🎨 **The looks are still being tweaked** and will keep changing. The
-> names are shorthand for the films they're based on, not exact copies.
-> All trademarks belong to their owners.
+> names are shorthand inspired by those films — original designs, not
+> exact copies or licensed emulations. All trademarks belong to their
+> owners. Soup Engine is **not affiliated with** Canon, Fujifilm, Kodak,
+> Adobe, or Magic Lantern.
 
 <br>
 
@@ -70,132 +69,77 @@ All thirteen, one frame, straight off the card.
 
 ## 📦 Installing
 
-There are two install families. Steps are **not** interchangeable.
+You need three things: the **right Canon firmware**, **stock Magic Lantern**
+for that body, and the **Soup Engine zip** for that body.
 
-- **Classic** (5D Classic, 40D): patch Magic Lantern's `AUTOEXEC.BIN` and
-  boot a separate `SE.BIN`.
-- **Film-in-ML** (50D, 6D, 5D Mark III): rebuild Magic Lantern with a Film
-  page linked in. No `SE.BIN`. Do **not** run `tools/patch-film.py` on
-  these bodies.
+> ### 👉 [Download the latest release](https://github.com/rebelt2i/soup-engine-50d/releases/latest)
+>
+> Pick the zip whose name ends with your platform (`5DC.111`, `50D.109`,
+> `6D.116`, or `5D3.123`). Each zip has a short `INSTALL.txt` inside.
 
 <br>
 
-### EOS 5D Classic (firmware 1.1.1)
+### Shared steps (every camera)
 
-#### 1️⃣ &nbsp; Install Magic Lantern
+#### 1️⃣ &nbsp; Install stock Magic Lantern first
 
-> ### 👉 [builds.magiclantern.fm/5DC.html](https://builds.magiclantern.fm/5DC.html)
+| Camera | Magic Lantern page |
+|:--|:--|
+| 5D Classic | [5DC.html](https://builds.magiclantern.fm/5DC.html) |
+| 50D | [50D.html](https://builds.magiclantern.fm/50D.html) |
+| 6D Mark I | [6D.html](https://builds.magiclantern.fm/6D.html) |
+| 5D Mark III | [5D3.html](https://builds.magiclantern.fm/5D3.html) |
 
-Follow their instructions, then check the camera starts and their menu
-opens before going further. Soup Engine never touches your camera's
+Follow their instructions. Confirm the camera starts and the Magic Lantern
+menu opens before going further. Soup Engine never touches the camera's
 boot flag; their installer does that.
 
 <br>
 
-#### 2️⃣ &nbsp; Back up their `autoexec.bin`
+#### 2️⃣ &nbsp; Back up the stock files
 
-Copy it off the card somewhere safe. Putting it back is how you
-uninstall.
+Copy off the card and keep somewhere safe:
 
-<br>
-
-#### 3️⃣ &nbsp; Copy the files to the root of your card
-
-> ### 📦 [Download the latest release](https://github.com/jiijii0/soup-engine/releases/latest)
-
-Unzip to the card root, replacing `AUTOEXEC.BIN`. Or copy
-[`card/`](card) from this repo, which is the same files.
-
-| file | what it is |
-|:--|:--|
-| 📄 `AUTOEXEC.BIN` | replaces Magic Lantern's |
-| ⚙️ `SE.BIN` | the engine |
-| 🎞️ `ML/FILM/` | the film stocks |
-
-<br>
-
-#### ✅ &nbsp; Put the card in and switch the camera on
-
-That's it. Nothing to enable, no menu to find.
-
-> While Soup Engine is installed you won't have Magic Lantern's own
-> menu, since this replaces the file that provides it. Put their
-> `autoexec.bin` back whenever you want it again.
-
-<br>
-
-### EOS 40D (firmware 1.1.1) — experimental
-
-Same Classic contract as the 5D Classic (VxWorks, trash-button picker).
-There is **no** official Magic Lantern page for this body.
-
-1. Obtain a bootable experimental 40D.111 Magic Lantern `autoexec.bin` and
-   confirm **FIO works** (card read/write) before anything else.
-2. Place it at `src/vendor/magiclantern-40D/autoexec.bin` (see
-   [`src/ml/platforms/40D.111/README.md`](src/ml/platforms/40D.111/README.md)).
-3. When patch holes are confirmed for that binary:
-
-```sh
-make -C src payload PLATFORM=40D.111
-python3 src/tools/patch-film.py --platform 40D.111
-```
-
-Until `holes_confirmed` is set in that platform's `patch.json`, the patch
-tool refuses to run on purpose.
-
-<br>
-
-### EOS 50D / 6D Mark I / 5D Mark III (Film-in-ML)
-
-| Body | Firmware | Magic Lantern | Build |
-|:--|:--|:--|:--|
-| 50D | 1.0.9 | [50D.html](https://builds.magiclantern.fm/50D.html) | `--platform 50D.109` |
-| 6D Mark I | 1.1.6 | [6D.html](https://builds.magiclantern.fm/6D.html) | `--platform 6D.116` |
-| 5D Mark III | **1.2.3** | [5D3.html](https://builds.magiclantern.fm/5D3.html) | `--platform 5D3.123` |
-
-<br>
-
-#### 1️⃣ &nbsp; Install stock Magic Lantern for that firmware
-
-Follow their instructions. Confirm the camera starts and the ML menu opens.
-
-<br>
-
-#### 2️⃣ &nbsp; Back up their `autoexec.bin` and matching `.sym`
+- **Every body:** `AUTOEXEC.BIN`
+- **50D / 6D / 5D Mark III also:** `ML/modules/50D_109.sym`,
+  `ML/modules/6D_116.sym`, or `ML/modules/5D3_123.sym` (whichever matches)
 
 Putting those back is how you uninstall.
 
 <br>
 
-#### 3️⃣ &nbsp; Build AUTOEXEC with the Film page
+#### 3️⃣ &nbsp; Unzip Soup Engine onto the card
 
-```sh
-python3 src/tools/build-ml.py --platform 50D.109 --card /path/to/card
-python3 src/tools/build-ml.py --platform 6D.116 --card /path/to/card
-python3 src/tools/build-ml.py --platform 5D3.123 --card /path/to/card
-```
-
-(`build-50d.py` remains a thin wrapper for `50D.109`.)
-
-That checks out Magic Lantern `ed3e7c0d`, overlays
-[`integrations/magiclantern/`](integrations/magiclantern/), and writes:
-
-| file | what it is |
-|:--|:--|
-| 📄 `AUTOEXEC.BIN` | Magic Lantern, with the Film page linked in |
-| 📄 `ML/modules/<MODEL>_<FW>.sym` | must match that `AUTOEXEC.BIN` |
-| 🎞️ `ML/FILM/` | the film stocks |
-
-Why the Classic patch path fails on the 50D is in
-[`src/ml/platforms/50D.109/PITFALLS.md`](src/ml/platforms/50D.109/PITFALLS.md).
+Open the zip for your camera. Copy everything to the **root** of the card
+(same place as `AUTOEXEC.BIN`). Replace files when asked.
 
 <br>
 
 #### ✅ &nbsp; Put the card in and switch the camera on
 
-Open the Magic Lantern menu. The **Film** page is the one with the `F`
-tab. Turn **Film** on. Leave **Delete CR2** off until you have seen a
-picture you like.
+| Family | What to do |
+|:--|:--|
+| **5D Classic** | Nothing to enable. Press the **trash button** for the film picker. |
+| **50D / 6D / 5D Mark III** | Open the Magic Lantern menu. The **Film** page is the `F` tab. Turn **Film** on. Leave **Delete CR2** off until you have seen a picture you like. |
+
+<br>
+
+> ### ⚠️ Set your Picture Style to Standard, Neutral or Faithful
+>
+> On Monochrome every look comes out black and white.
+
+<br>
+
+<details>
+<summary><strong>5D Classic — note about the Magic Lantern menu</strong></summary>
+
+<br>
+
+While Soup Engine is installed you won't have Magic Lantern's own menu,
+since this replaces the file that provides it. Put their `AUTOEXEC.BIN`
+back whenever you want it again.
+
+</details>
 
 <br>
 
@@ -207,7 +151,7 @@ picture you like.
 
 <br>
 
-### Classic (5D Classic, 40D)
+### 5D Classic
 
 Press the **trash button** and the picker fills the screen.
 
@@ -224,14 +168,6 @@ Each photo takes about twenty seconds to develop. You can keep shooting
 while it works, and the screen shows `FRAME 2 OF 3` when there's a
 queue.
 
-<br>
-
-> ### ⚠️ Set your Picture Style to Standard, Neutral or Faithful
->
-> On Monochrome every look comes out black and white.
-
-<br>
-
 **`SOURCE: JPEG`** is the default. Use this.
 
 **`SOURCE: RAW`** works from the sensor data instead. It takes minutes
@@ -246,7 +182,7 @@ exactly as the camera shot it.
 
 <br>
 
-### Film-in-ML (50D, 6D, 5D Mark III)
+### 50D / 6D / 5D Mark III
 
 On the **Film** page:
 
@@ -262,16 +198,6 @@ Take a photo. The screen shows `FILM ACROS 43,71%` until the JPEG is
 finished. You can keep shooting while it works. When the box goes away,
 open playback on that shot: with **Delete CR2** off, the raw's preview is
 already the look. `FLM_1234.JPG` is the same picture as its own file.
-
-<br>
-
-> ### ⚠️ Set your Picture Style to Standard, Neutral or Faithful
->
-> On Monochrome every look comes out black and white, because the camera
-> hands this a grey picture to start from and there's no colour in it
-> to work with.
-
-<br>
 
 The look is applied to the JPEG preview Canon already embedded in the
 raw, not to the sensor data. That is why a monochrome picture style
@@ -316,9 +242,9 @@ matches what the camera writes.<br>Your photo never leaves your browser.
 
 <br>
 
-### Classic (5D Classic, 40D)
+### 5D Classic
 
-Put Magic Lantern's original `autoexec.bin` back. That's all.
+Put Magic Lantern's original `AUTOEXEC.BIN` back. That's all.
 
 To pause it without uninstalling, delete `SE.BIN`. The camera boots
 normally without it.
@@ -330,9 +256,9 @@ normally without it.
 
 <br>
 
-### Film-in-ML (50D, 6D, 5D Mark III)
+### 50D / 6D / 5D Mark III
 
-Put Magic Lantern's original `autoexec.bin` back, and put a matching
+Put Magic Lantern's original `AUTOEXEC.BIN` back, and put a matching
 `ML/modules/<MODEL>_<FW>.sym` beside it. These bodies do not boot
 `SE.BIN`; deleting that file does not uninstall the Film page.
 
@@ -359,17 +285,33 @@ to them. Open an issue here instead.
 
 <br>
 
-## 📄 Source and licence
+## 📄 Source, building, licence
 
-All of it is in [`src/`](src).
+All of it is in [`src/`](src). Day-to-day install is the release zips
+above — you do not need to build.
 
-- **Classic:** `AUTOEXEC.BIN` is Magic Lantern with a small binary patch;
-  `tools/patch-film.py` applies it. Platforms under
-  `src/ml/platforms/5DC.111` and `40D.111`.
-- **Film-in-ML:** `AUTOEXEC.BIN` is a rebuilt Magic Lantern with overlays
-  from [`integrations/magiclantern/`](integrations/magiclantern/), built by
-  `tools/build-ml.py`.
+Developers: see [`docs/BUILD.md`](docs/BUILD.md) and [`src/README.md`](src/README.md).
+
+Notices for Magic Lantern, JPEG algorithms, and trademarks:
+[`NOTICE`](NOTICE).
 
 GPL v2. See [LICENSE](LICENSE). Distributed **without any warranty**,
 including the implied warranties of merchantability and fitness for a
 particular purpose (sections 11 and 12).
+
+<br>
+
+<details>
+<summary><strong>Experimental / developers</strong></summary>
+
+<br>
+
+**EOS 40D** (firmware 1.1.1) uses the same Classic path as the 5D Classic
+but is experimental: no official Magic Lantern zip, card I/O must be
+proven, and patch holes may be unconfirmed. There is no user release zip.
+See [`src/ml/platforms/40D.111/README.md`](src/ml/platforms/40D.111/README.md).
+
+Why the Classic patch path fails on the 50D:
+[`src/ml/platforms/50D.109/PITFALLS.md`](src/ml/platforms/50D.109/PITFALLS.md).
+
+</details>
