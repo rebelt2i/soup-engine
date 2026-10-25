@@ -64,7 +64,9 @@ python3 src/tools/pack-release.py --tag v0.2.0-beta \
   --classic-dir dist/classic-stage
 ```
 
-Or push a `v*` tag / run the **Release** workflow on GitHub.
+Every successful push to `master` / `main` publishes a GitHub Release
+(`master-<run>-<sha>`) via CI, with one zip per body. Versioned releases:
+push a `v*` tag or run the **Release** workflow.
 
 ## More detail
 

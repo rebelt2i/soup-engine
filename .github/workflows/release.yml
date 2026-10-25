@@ -1,5 +1,8 @@
 name: Release
 
+# Versioned releases (v*). Continuous master builds are published by ci.yml
+# after every successful push to master/main.
+
 on:
   push:
     tags:
