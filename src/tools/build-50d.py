@@ -3,7 +3,7 @@
 Build the EOS 50D Magic Lantern autoexec with the Soup Film menu.
 
 Thin wrapper around build-ml.py --platform 50D.109. Prefer that script
-for other DryOS bodies (6D.116, 5D3.123).
+for other DryOS bodies (6D.116, 5D3.123, 550D.109).
 
     python3 tools/build-50d.py
     python3 tools/build-50d.py --card I:\\

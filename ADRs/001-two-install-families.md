@@ -16,7 +16,7 @@ Maintain **two install families** that share `src/engine` and `src/stocks`:
 | Family | Platforms | Ship artifact | Build |
 |--------|-----------|---------------|-------|
 | **Classic** | `5DC.111` (released), `40D.111` (experimental) | Patched `AUTOEXEC.BIN` + `SE.BIN` | `make payload` + `patch-film.py` |
-| **Film-in-ML** | `50D.109`, `6D.116`, `5D3.123` | Rebuilt ML `AUTOEXEC.BIN` + `.sym` | `tools/build-ml.py` |
+| **Film-in-ML** | `50D.109`, `6D.116`, `5D3.123`, `550D.109` | Rebuilt ML `AUTOEXEC.BIN` + `.sym` | `tools/build-ml.py` |
 
 Film-in-ML bodies do **not** boot `SE.BIN`. Classic does not use the Film-in-ML
 overlay tree under `integrations/magiclantern/`.

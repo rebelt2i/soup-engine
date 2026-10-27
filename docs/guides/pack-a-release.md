@@ -17,6 +17,7 @@ cp src/ml/payload/soupeng.bin dist/classic-stage/SE.BIN
 python3 src/tools/build-ml.py --platform 50D.109
 python3 src/tools/build-ml.py --platform 6D.116
 python3 src/tools/build-ml.py --platform 5D3.123
+python3 src/tools/build-ml.py --platform 550D.109
 
 python3 src/tools/pack-release.py --tag v0.2.0-beta \
   --classic-dir dist/classic-stage

@@ -39,12 +39,13 @@ patch still needs the vendor stock file locally.
 
 40D is experimental; see `src/ml/platforms/40D.111/README.md`.
 
-## Film-in-ML (50D / 6D / 5D3)
+## Film-in-ML (50D / 6D / 5D3 / 550D)
 
 ```sh
 python3 src/tools/build-ml.py --platform 50D.109
 python3 src/tools/build-ml.py --platform 6D.116 --card /path/to/card
 python3 src/tools/build-ml.py --platform 5D3.123 --card /path/to/card
+python3 src/tools/build-ml.py --platform 550D.109 --card /path/to/card
 ```
 
 Clones Magic Lantern at the pin in

@@ -7,7 +7,7 @@ Expects builds already done:
   Classic (5DC.111):
     card/AUTOEXEC.BIN, card/SE.BIN   (or --classic-dir)
 
-  Film-in-ML (50D.109, 6D.116, 5D3.123):
+  Film-in-ML (50D.109, 6D.116, 5D3.123, 550D.109):
     src/vendor/magiclantern/platform/<PLATFORM>/build/autoexec.bin
     src/vendor/magiclantern/platform/<PLATFORM>/build/<MODEL>_<FW>.sym
 
@@ -35,7 +35,7 @@ ML_BUILD = os.path.join(SRC, "vendor", "magiclantern", "platform")
 DIST = os.path.join(ROOT, "dist")
 
 CLASSIC = ("5DC.111",)
-FILM_ML = ("50D.109", "6D.116", "5D3.123")
+FILM_ML = ("50D.109", "6D.116", "5D3.123", "550D.109")
 ALL = CLASSIC + FILM_ML
 
 # Photographer-facing names for INSTALL.txt
@@ -65,6 +65,13 @@ BODY = {
         "title": "EOS 5D Mark III",
         "firmware": "1.2.3",
         "ml": "https://builds.magiclantern.fm/5D3.html",
+        "ui": "Magic Lantern menu → Film page (F tab).",
+        "family": "film-ml",
+    },
+    "550D.109": {
+        "title": "EOS 550D",
+        "firmware": "1.0.9",
+        "ml": "https://builds.magiclantern.fm/550D.html",
         "ui": "Magic Lantern menu → Film page (F tab).",
         "family": "film-ml",
     },

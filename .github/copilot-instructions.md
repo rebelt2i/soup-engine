@@ -38,6 +38,7 @@ Desktop path: same engine via `src/host/` → `filmdev`.
 | `50D.109` | 50D 1.0.9 | **Film-in-ML** | `python3 src/tools/build-ml.py --platform 50D.109` |
 | `6D.116` | 6D Mark I 1.1.6 | Film-in-ML | `… --platform 6D.116` |
 | `5D3.123` | 5D Mark III **1.2.3** | Film-in-ML | `… --platform 5D3.123` |
+| `550D.109` | 550D 1.0.9 | Film-in-ML | `… --platform 550D.109` |
 
 Classic boots patched ML + `SE.BIN`. Film-in-ML boots rebuilt ML with Film
 menu — **does not** boot `SE.BIN`. See [ADR 001](../ADRs/001-two-install-families.md),
@@ -53,6 +54,7 @@ make -C src payload PLATFORM=5DC.111   # Classic SE.BIN + patch-film
 python3 src/tools/build-ml.py --platform 50D.109
 python3 src/tools/build-ml.py --platform 6D.116
 python3 src/tools/build-ml.py --platform 5D3.123
+python3 src/tools/build-ml.py --platform 550D.109
 
 # Pack (after Classic + Film-in-ML artifacts exist):
 mkdir -p dist/classic-stage
@@ -74,7 +76,7 @@ Windows: Git `usr\bin` on `PATH`. Optional `ARM_BINPATH`.
 
 ## Prohibitions
 
-- **Never** run `patch-film.py` on `50D.109`, `6D.116`, or `5D3.123`.
+- **Never** run `patch-film.py` on `50D.109`, `6D.116`, `5D3.123`, or `550D.109`.
 - **Never** revive heap-loaded `SE.BIN` / GUI-hook for 50D without new on-camera proof — read `src/ml/platforms/50D.109/PITFALLS.md` first. Do not raise `user_mem_start` / `bss_end` to “make room” for SE.
 - If a test fails: **fix the code, not the assertion**, unless requirements explicitly changed.
 - Do not create unsolicited `CHANGES.md` / summary markdown files.

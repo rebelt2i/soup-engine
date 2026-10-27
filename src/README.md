@@ -30,7 +30,7 @@ Two install families share one look engine:
 | Family | Platforms | How to build |
 |:--|:--|:--|
 | **Classic** (VxWorks) | `5DC.111`, `40D.111` | `make payload` + `patch-film.py` |
-| **Film-in-ML** (DryOS) | `50D.109`, `6D.116`, `5D3.123` | `tools/build-ml.py --platform …` |
+| **Film-in-ML** (DryOS) | `50D.109`, `6D.116`, `5D3.123`, `550D.109` | `tools/build-ml.py --platform …` |
 
 ```sh
 # Classic
@@ -44,6 +44,7 @@ python3 tools/patch-film.py --platform 40D.111
 python3 tools/build-ml.py --platform 50D.109
 python3 tools/build-ml.py --platform 6D.116 --card /path/to/card
 python3 tools/build-ml.py --platform 5D3.123 --card /path/to/card
+python3 tools/build-ml.py --platform 550D.109 --card /path/to/card
 ```
 
 `PLATFORM` in the top-level Makefile still defaults to `50D.109` for local
@@ -100,7 +101,7 @@ Same contract as the 5D Classic. Digic III / VxWorks. See
 - `patch.json` ships with `holes_confirmed: false` until stub/gui/init
   addresses are rediscovered for that binary.
 
-### Film-in-ML — 50D.109, 6D.116, 5D3.123
+### Film-in-ML — 50D.109, 6D.116, 5D3.123, 550D.109
 
 These bodies boot a Magic Lantern `autoexec.bin` rebuilt with the Film
 page. They do not boot `SE.BIN`. Do not run `patch-film.py` on them.
@@ -109,6 +110,7 @@ page. They do not boot `SE.BIN`. Do not run `patch-film.py` on them.
 python3 tools/build-ml.py --platform 50D.109
 python3 tools/build-ml.py --platform 6D.116
 python3 tools/build-ml.py --platform 5D3.123
+python3 tools/build-ml.py --platform 550D.109
 ```
 
 The script checks out Magic Lantern `ed3e7c0d`
@@ -122,6 +124,7 @@ playback sizes and Makefiles live under each platform directory.
 | `50D.109` | `boot-d45.o` | 1.0.9 | `ML/modules/50D_109.sym` |
 | `6D.116` | `boot-d45-am.o` (AllocateMemory) | 1.1.6 | `ML/modules/6D_116.sym` |
 | `5D3.123` | `boot-d45.o` | 1.2.3 | `ML/modules/5D3_123.sym` |
+| `550D.109` | `boot-d45-am.o` (AllocateMemory) | 1.0.9 | `ML/modules/550D_109.sym` |
 
 You need `arm-none-eabi-gcc` (`ARM_BINPATH`) and, on Windows, Git's
 `usr\bin` on `PATH` so the Magic Lantern makefiles can find `sh`.

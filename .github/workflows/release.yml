@@ -62,6 +62,11 @@ jobs:
           ARM_BINPATH: /usr/bin
         run: python3 src/tools/build-ml.py --platform 5D3.123
 
+      - name: Build Film-in-ML 550D.109
+        env:
+          ARM_BINPATH: /usr/bin
+        run: python3 src/tools/build-ml.py --platform 550D.109
+
       - name: Pack release zips
         run: |
           python3 src/tools/pack-release.py \
@@ -85,10 +90,11 @@ jobs:
           | EOS 50D | 1.0.9 | \`soup-engine-${TAG}-50D.109.zip\` |
           | EOS 6D Mark I | 1.1.6 | \`soup-engine-${TAG}-6D.116.zip\` |
           | EOS 5D Mark III | 1.2.3 | \`soup-engine-${TAG}-5D3.123.zip\` |
+          | EOS 550D | 1.0.9 | \`soup-engine-${TAG}-550D.109.zip\` |
 
           Each zip includes \`LICENSE\`, \`NOTICE\`, and \`INSTALL.txt\`.
 
-          **Before installing:** install stock Magic Lantern for that firmware, back up \`AUTOEXEC.BIN\` (and the matching \`.sym\` on 50D / 6D / 5D3).
+          **Before installing:** install stock Magic Lantern for that firmware, back up \`AUTOEXEC.BIN\` (and the matching \`.sym\` on Film-in-ML bodies).
 
           **Beta.** Unofficial. No warranty (GPL §§11–12). Not affiliated with Canon, Fujifilm, Kodak, Adobe, or Magic Lantern. Film names are trademarks of their owners.
 

@@ -15,8 +15,8 @@ Hard-won detail: [`src/ml/platforms/50D.109/PITFALLS.md`](../src/ml/platforms/50
 
 ## Decision
 
-- **Ship** 50D.109 (and by the same DryOS family rules, 6D.116 / 5D3.123) via
-  Film-in-ML only: `python3 src/tools/build-ml.py --platform …`.
+- **Ship** 50D.109 (and by the same DryOS family rules, 6D.116 / 5D3.123 /
+  550D.109) via Film-in-ML only: `python3 src/tools/build-ml.py --platform …`.
 - **Do not** run `patch-film.py` on these bodies.
 - **Do not** revive heap-loaded `SE.BIN` + GUI hook for 50D without new
   on-camera proof that overturns PITFALLS. Treat “just try the hook again” as
@@ -26,7 +26,7 @@ Hard-won detail: [`src/ml/platforms/50D.109/PITFALLS.md`](../src/ml/platforms/50
 
 ## Consequences
 
-- Agents must not propose Classic-style patch/SE packaging for 50D/6D/5D3.
+- Agents must not propose Classic-style patch/SE packaging for 50D/6D/5D3/550D.
 - Memory-layout “fixes” that raise `user_mem_start` / `bss_end` for SE on 50D
   are rejected unless accompanied by new evidence and an ADR update.
 - Porting notes live under `integrations/magiclantern/<PLATFORM>/`.

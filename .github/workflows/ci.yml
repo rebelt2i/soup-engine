@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [50D.109, 6D.116, 5D3.123]
+        platform: [50D.109, 6D.116, 5D3.123, 550D.109]
     steps:
       - uses: actions/checkout@v4
 
@@ -110,7 +110,7 @@ jobs:
           cp card/AUTOEXEC.BIN dist/classic-stage/AUTOEXEC.BIN
           cp artifacts/classic-se-bin/soupeng.bin dist/classic-stage/SE.BIN
 
-          for plat in 50D.109 6D.116 5D3.123; do
+          for plat in 50D.109 6D.116 5D3.123 550D.109; do
             dest="src/vendor/magiclantern/platform/${plat}/build"
             mkdir -p "$dest"
             cp "artifacts/film-ml-${plat}/AUTOEXEC.BIN" "${dest}/autoexec.bin"
@@ -142,10 +142,11 @@ jobs:
           | EOS 50D | 1.0.9 | \`-50D.109.zip\` |
           | EOS 6D Mark I | 1.1.6 | \`-6D.116.zip\` |
           | EOS 5D Mark III | 1.2.3 | \`-5D3.123.zip\` |
+          | EOS 550D | 1.0.9 | \`-550D.109.zip\` |
 
           Each zip includes \`LICENSE\`, \`NOTICE\`, and \`INSTALL.txt\`.
 
-          **Before installing:** install stock Magic Lantern for that firmware, back up \`AUTOEXEC.BIN\` (and the matching \`.sym\` on 50D / 6D / 5D3).
+          **Before installing:** install stock Magic Lantern for that firmware, back up \`AUTOEXEC.BIN\` (and the matching \`.sym\` on Film-in-ML bodies).
 
           **Beta.** Unofficial. No warranty (GPL §§11–12). Not affiliated with Canon, Fujifilm, Kodak, Adobe, or Magic Lantern.
 

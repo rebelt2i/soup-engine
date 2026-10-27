@@ -26,6 +26,7 @@ your camera** — no compiler, no build steps.
 | EOS 50D | 1.0.9 | `…-50D.109.zip` | Magic Lantern **Film** page |
 | EOS 6D Mark I | 1.1.6 | `…-6D.116.zip` | Magic Lantern **Film** page |
 | EOS 5D Mark III | **1.2.3** | `…-5D3.123.zip` | Magic Lantern **Film** page |
+| EOS 550D | 1.0.9 | `…-550D.109.zip` | Magic Lantern **Film** page |
 
 ```
 # 5D Classic
@@ -75,7 +76,7 @@ for that body, and the **Soup Engine zip** for that body.
 > ### 👉 [Download the latest release](https://github.com/rebelt2i/soup-engine/releases/latest)
 >
 > Pick the zip whose name ends with your platform (`5DC.111`, `50D.109`,
-> `6D.116`, or `5D3.123`). Each zip has a short `INSTALL.txt` inside.
+> `6D.116`, `5D3.123`, or `550D.109`). Each zip has a short `INSTALL.txt` inside.
 
 <br>
 

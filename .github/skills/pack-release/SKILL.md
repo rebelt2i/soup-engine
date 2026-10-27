@@ -27,6 +27,7 @@ description: Build Classic + Film-in-ML artifacts and pack per-body release zips
    python3 src/tools/build-ml.py --platform 50D.109
    python3 src/tools/build-ml.py --platform 6D.116
    python3 src/tools/build-ml.py --platform 5D3.123
+   python3 src/tools/build-ml.py --platform 550D.109
    ```
 
 4. Pack:

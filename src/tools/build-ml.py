@@ -11,6 +11,7 @@ that checkout.
     python3 tools/build-ml.py --platform 50D.109
     python3 tools/build-ml.py --platform 6D.116 --card I:\\
     python3 tools/build-ml.py --platform 5D3.123 --card I:\\
+    python3 tools/build-ml.py --platform 550D.109 --card I:\\
 
 Classic bodies (5DC, 40D) use make payload + patch-film.py instead.
 """
@@ -30,7 +31,7 @@ ML = os.path.join(SRC, "vendor", "magiclantern")
 REMOTE = "https://github.com/reticulatedpines/magiclantern_simplified"
 
 # Platforms that ship via Film-in-ML rebuild (not Classic SE.BIN).
-PLATFORMS = ("50D.109", "6D.116", "5D3.123")
+PLATFORMS = ("50D.109", "6D.116", "5D3.123", "550D.109")
 
 
 def die(msg):

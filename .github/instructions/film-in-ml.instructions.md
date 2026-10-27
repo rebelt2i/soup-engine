@@ -11,7 +11,7 @@ menu. They do **not** boot `SE.BIN`.
 
 - `_common/` — shared Film page / develop sources
 - `<PLATFORM>/` — Makefile, `soup_cam.h`, `NOTES.md`, `SOUP-PIN.txt`
-- Platforms: `50D.109`, `6D.116`, `5D3.123`
+- Platforms: `50D.109`, `6D.116`, `5D3.123`, `550D.109`
 
 ## Rules
 
@@ -19,8 +19,8 @@ menu. They do **not** boot `SE.BIN`.
 - **Never** run `src/tools/patch-film.py` on these bodies.
 - Honour `SOUP-PIN.txt` (do not casually retarget ML without updating pin + docs).
 - Overlay order: `_common` then platform directory.
-- Boot objects differ: 50D/5D3 `boot-d45.o`; 6D `boot-d45-am.o` — do not
-  copy 50D boot assumptions onto 6D.
+- Boot objects differ: 50D/5D3 `boot-d45.o`; 6D/550D `boot-d45-am.o` — do not
+  copy 50D boot assumptions onto AllocateMemory bodies.
 - 5D Mark III: firmware **1.2.3 only**.
 - Before changing memory / FIO / GUI assumptions on 50D, read
   `src/ml/platforms/50D.109/PITFALLS.md` and `ADRs/002-50d-film-in-ml-only.md`.

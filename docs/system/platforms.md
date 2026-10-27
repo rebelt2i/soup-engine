@@ -9,6 +9,7 @@ Last reviewed: 2026-10
 | `50D.109` | EOS 50D | 1.0.9 | Film-in-ML | ML **Film** page | `python3 src/tools/build-ml.py --platform 50D.109` |
 | `6D.116` | EOS 6D Mark I | 1.1.6 | Film-in-ML | ML **Film** page | `… --platform 6D.116` |
 | `5D3.123` | EOS 5D Mark III | **1.2.3 only** | Film-in-ML | ML **Film** page | `… --platform 5D3.123` |
+| `550D.109` | EOS 550D | 1.0.9 | Film-in-ML | ML **Film** page | `… --platform 550D.109` |
 
 ## Film-in-ML boot / sym
 
@@ -17,6 +18,7 @@ Last reviewed: 2026-10
 | `50D.109` | `boot-d45.o` | `ML/modules/50D_109.sym` |
 | `6D.116` | `boot-d45-am.o` | `ML/modules/6D_116.sym` |
 | `5D3.123` | `boot-d45.o` | `ML/modules/5D3_123.sym` |
+| `550D.109` | `boot-d45-am.o` | `ML/modules/550D_109.sym` |
 
 ML pin: `integrations/magiclantern/<PLATFORM>/SOUP-PIN.txt`.
 

@@ -4,7 +4,7 @@ Last reviewed: 2026-10
 
 ## What it is
 
-DryOS bodies (`50D.109`, `6D.116`, `5D3.123`) boot a Magic Lantern
+DryOS bodies (`50D.109`, `6D.116`, `5D3.123`, `550D.109`) boot a Magic Lantern
 `autoexec.bin` **rebuilt** with Soup’s Film menu. Shared sources:
 `integrations/magiclantern/_common/`. Per-camera: Makefile, `soup_cam.h`,
 `NOTES.md`, `SOUP-PIN.txt`.
@@ -33,6 +33,7 @@ hooks). Film-in-ML is the shipping design for these bodies —
 python3 src/tools/build-ml.py --platform 50D.109
 python3 src/tools/build-ml.py --platform 6D.116 --card /path/to/card
 python3 src/tools/build-ml.py --platform 5D3.123 --card /path/to/card
+python3 src/tools/build-ml.py --platform 550D.109 --card /path/to/card
 ```
 
 ## Related

@@ -6,7 +6,7 @@ before editing. That file is the always-on system prompt.
 ## Must follow
 
 1. Two install families: **Classic** (`5DC.111` / experimental `40D.111`) vs
-   **Film-in-ML** (`50D.109`, `6D.116`, `5D3.123`). See `ADRs/`.
+   **Film-in-ML** (`50D.109`, `6D.116`, `5D3.123`, `550D.109`). See `ADRs/`.
 2. Never `patch-film.py` on Film-in-ML bodies. Never revive 50D `SE.BIN`
    heap/hook without reading `src/ml/platforms/50D.109/PITFALLS.md`.
 3. Default verify: `make -C src test` and `make -C src arm`. Fix code on
